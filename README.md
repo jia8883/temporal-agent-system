@@ -56,7 +56,11 @@ It combines traditional backend workflow design with modern LLM-based agent syst
 
 ## Architecture
 
-![architecture](./api/img/architecture.png)
+
+<p align="center">
+  <img src="./api/img/architecture.png" width="600"/>
+</p>
+<p align="center"><i>System Architecture Overview</i></p>
 
 - FastAPI acts as the entry point
 - Temporal orchestrates workflows
