@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project demonstrates how to design and implement:
+This project focuses on designing and implementing:
 
 * A **rate-limited batch processing system** using Temporal
 * A **fault-tolerant ReAct agent system** with LLM + tool calling
@@ -12,7 +12,13 @@ by leveraging Temporal’s workflow orchestration capabilities.
 
 It combines traditional backend workflow design with modern LLM-based agent systems.
 
----
+
+## Background
+
+This project was initially inspired by a technical assignment,
+and later extended into a personal project with additional design considerations
+around workflow orchestration and fault-tolerant agent systems.
+
 
 ## Key Features
 
@@ -147,8 +153,8 @@ Access:
 * GET /promo/status
 * POST /promo/discard
 
-> Note: API paths are named for legacy reasons (promo),
-> but internally implemented as a generic batch workflow.
+> Note: The API paths use "promo" as an example domain, 
+> but the underlying workflow is designed as a generic batch processing system.
 
 ---
 
