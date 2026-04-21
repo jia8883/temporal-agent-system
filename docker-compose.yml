@@ -45,9 +45,9 @@ services:
     volumes:
       - ./api/prompts:/app/prompts
   
-  promo-worker:
+  job-worker:
     build: .
-    command: python -m api.workers.promo_worker
+    command: python -m api.workers.job_worker
     depends_on:
       - temporal
     environment:

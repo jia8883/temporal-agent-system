@@ -1,10 +1,10 @@
 from temporalio import workflow
 from datetime import timedelta
-from api.activities.promo_activity import write_promo_activity
+from api.activities.job_activity import process_batch_activity
 
 
 @workflow.defn
-class PromoWorkflow:
+class JobWorkflow:
 
     def __init__(self):
         self.queue = []
@@ -43,7 +43,7 @@ class PromoWorkflow:
                 batch = min(100, remaining)
 
                 await workflow.execute_activity(
-                    write_promo_activity,
+                    process_batch_activity,
                     {
                         "title": title,
                         "count": batch
