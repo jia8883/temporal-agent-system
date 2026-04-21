@@ -1,43 +1,42 @@
 # Temporal-Based Workflow & Agent System
 
+
 ## Overview
 
-This project focuses on designing and implementing:
+This project implements a **stateful job orchestration system** using Temporal.
 
-* A **rate-limited batch processing system** using Temporal
-* A **fault-tolerant ReAct agent system** with LLM + tool calling
+In many event-driven systems (e.g., Kafka-based pipelines), failed tasks often require
+reprocessing from the beginning, leading to inefficiency and increased operational cost.
 
-The system is built to handle **long-running, stateful, and failure-prone tasks**
-by leveraging Temporal’s workflow orchestration capabilities.
+To address this, this system introduces:
 
-It combines traditional backend workflow design with modern LLM-based agent systems.
+- Stateful workflow execution
+- Step-level retry and recovery
+- Long-running job orchestration
 
+Additionally, it includes a **fault-tolerant ReAct agent system**, where each reasoning step
+is persisted and recoverable.
 
-## Background
+👉 The goal is to demonstrate how Temporal can be used to build
+reliable backend systems beyond stateless task queues.
 
-This project was initially inspired by a technical assignment,
-and later extended into a personal project with additional design considerations
-around workflow orchestration and fault-tolerant agent systems.
-
+---
 
 ## Key Features
 
-### 1. Batch Processing System
+### 1. Job Processing System
 
-* Queue-based request handling
-* Sequential batch execution (no parallel writes)
-* Rate limiting (100 items per 10 seconds)
-* Workflow-level state management (no external DB)
-* Runtime control via signals:
+- Queue-based job submission
+- Sequential execution with batching (no parallel processing)
+- Rate limiting (100 items per 10 seconds)
+- Stateful execution using Temporal (no external DB)
+- Runtime control via signals: pause, resume, discard
 
-  * pause
-  * resume
-  * discard
+👉 Designed to simulate real-world constraints such as:
+- rate-limited external APIs
+- legacy systems with low throughput
 
-👉 Designed to simulate **real-world constrained systems**
-(e.g., rate-limited external APIs or legacy DBs)
 
----
 
 ### 2. Agent System (ReAct-based)
 
@@ -48,7 +47,8 @@ around workflow orchestration and fault-tolerant agent systems.
 
 👉 Implemented **without LangChain**, directly on Temporal
 
----
+
+
 
 ### 3. Fault Tolerance
 
@@ -70,19 +70,21 @@ around workflow orchestration and fault-tolerant agent systems.
 
 - FastAPI acts as the entry point
 - Temporal orchestrates workflows
-- Batch workflow handles rate-limited processing
+- Job workflow handles rate-limited processing
 - Agent workflow implements a ReAct-based reasoning loop
 
----
+
 
 ## System Design
 
-### Batch Workflow
+### Job Workflow
 
-* Maintains internal queue
-* Processes requests in chunks
-* Enforces strict rate limiting
-* Fully controlled via workflow signals
+- Maintains internal queue
+- Processes jobs in chunks
+- Enforces strict rate limiting
+- Fully controlled via workflow signals
+
+👉 Designed to handle long-running jobs with constrained resources
 
 ### Agent Workflow
 
@@ -95,15 +97,23 @@ around workflow orchestration and fault-tolerant agent systems.
 
 ## Why Temporal?
 
-This system uses Temporal to handle:
+Traditional task queues (e.g., Kafka consumers, cron jobs) typically:
 
-* Durable execution
-* Stateful workflows
-* Fault recovery
-* Long-running processes
+- Do not preserve execution state
+- Require full retries on failure
+- Lack fine-grained control over long-running tasks
 
-Unlike traditional task queues,
-Temporal guarantees that execution resumes from failure points.
+Temporal solves these problems by providing:
+
+- Durable execution (state persisted automatically)
+- Step-level retry (resume from failure point)
+- Built-in workflow orchestration
+- Signal-based runtime control
+
+👉 This makes it suitable for:
+- long-running job processing
+- workflow-based systems
+- AI agent pipelines
 
 ---
 
@@ -145,18 +155,23 @@ Access:
 
 ## API
 
-### Batch System
+### Job System
 
-* POST /promo/codes
-* POST /promo/pause
-* POST /promo/resume
-* GET /promo/status
-* POST /promo/discard
+- POST /jobs
+- POST /jobs/pause
+- POST /jobs/resume
+- GET  /jobs/status
+- POST /jobs/discard
 
-> Note: The API paths use "promo" as an example domain, 
-> but the underlying workflow is designed as a generic batch processing system.
+Example:
 
----
+```
+curl -X POST "http://localhost:8000/jobs" \
+-H "Content-Type: application/json" \
+-d '{"title": "report_job", "count": 500}'
+```
+
+
 
 ### Agent System
 
@@ -196,9 +211,10 @@ Result:
 
 ## Key Takeaways
 
-* Temporal can be used to build **stateful backend systems**
-* Agent workflows benefit from **durability and recovery**
-* ReAct pattern can be implemented without external frameworks
+- Designed a stateful job orchestration system using Temporal
+- Implemented rate-limited batch processing without external DB
+- Built a fault-tolerant ReAct agent system using workflow-based execution
+- Demonstrated how workflow engines can overcome limitations of stateless task queues
 
 ---
 

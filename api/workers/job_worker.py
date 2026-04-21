@@ -3,8 +3,8 @@ import asyncio
 from temporalio.worker import Worker
 
 from api.utils.temporal_client import get_temporal_client
-from api.workflows.promo_workflow import PromoWorkflow
-from api.activities.promo_activity import write_promo_activity
+from api.workflows.job_workflow import JobWorkflow
+from api.activities.job_activity import process_batch_activity
 from api.utils.temporal_ready import wait_for_temporal_ready
 
 
@@ -19,12 +19,12 @@ async def main():
     # Register workflow and activity to worker
     worker = Worker(
         client,
-        task_queue="promo-task-queue",  
-        workflows=[PromoWorkflow],
-        activities=[write_promo_activity],
+        task_queue="job-task-queue",  
+        workflows=[JobWorkflow],
+        activities=[process_batch_activity],
     )
 
-    print("Promo Worker started. Waiting for tasks...")
+    print("Job Worker started. Waiting for tasks...")
 
     await worker.run()
 

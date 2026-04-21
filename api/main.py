@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from temporalio.client import Client
 from pydantic import BaseModel, Field
 
-from api.workflows.promo_workflow import PromoWorkflow
+from api.workflows.job_workflow import JobWorkflow
 from api.utils.temporal_client import get_temporal_client
 from api.utils.temporal_ready import wait_for_temporal_ready
 
@@ -15,8 +15,8 @@ from api.utils.prompt_loader import load_prompt
 app = FastAPI()
 
 client: Client = None
-PROMO_WORKFLOW_ID = "promo-workflow"
-PROMO_TASK_QUEUE = "promo-task-queue"
+JOB_WORKFLOW_ID = "job-workflow"
+JOB_TASK_QUEUE = "job-task-queue"
 AGENT_TASK_QUEUE = "agent-task-queue"
 
 
@@ -32,22 +32,22 @@ async def startup():
     # Start workflow if not already running
     try:
         await client.start_workflow(
-            PromoWorkflow.run,
-            id=PROMO_WORKFLOW_ID,
-            task_queue=PROMO_TASK_QUEUE,
+            JobWorkflow.run,
+            id=JOB_WORKFLOW_ID,
+            task_queue=JOB_TASK_QUEUE,
         )
         print("Workflow started")
     except Exception:
         print("Workflow already exists")
 
 
-class PromoRequest(BaseModel):
+class JobRequest(BaseModel):
     title: str
     count: int = Field(..., ge=1, le=1000)
 
-@app.post("/promo/codes")
-async def add_promo(req: PromoRequest):
-    handle = client.get_workflow_handle(PROMO_WORKFLOW_ID)
+@app.post("/jobs")
+async def add_job(req: JobRequest):
+    handle = client.get_workflow_handle(JOB_WORKFLOW_ID)
     await handle.signal("add_request", {
         "title": req.title,
         "count": req.count
@@ -55,9 +55,9 @@ async def add_promo(req: PromoRequest):
     return {"message": "queued"}
 
 
-@app.post("/promo/pause")
+@app.post("/jobs/pause")
 async def pause():
-    handle = client.get_workflow_handle(PROMO_WORKFLOW_ID)
+    handle = client.get_workflow_handle(JOB_WORKFLOW_ID)
 
     status = await handle.query("get_status")
 
@@ -68,9 +68,9 @@ async def pause():
     return {"message": "paused"}
 
 
-@app.post("/promo/resume")
+@app.post("/jobs/resume")
 async def resume():
-    handle = client.get_workflow_handle(PROMO_WORKFLOW_ID)
+    handle = client.get_workflow_handle(JOB_WORKFLOW_ID)
 
     status = await handle.query("get_status")
 
@@ -81,16 +81,16 @@ async def resume():
     return {"message": "resumed"}
 
 
-@app.get("/promo/status")
+@app.get("/jobs/status")
 async def status():
-    handle = client.get_workflow_handle(PROMO_WORKFLOW_ID)
+    handle = client.get_workflow_handle(JOB_WORKFLOW_ID)
     result = await handle.query("get_status")
     return {"status": result}
 
 
-@app.post("/promo/discard")
+@app.post("/jobs/discard")
 async def discard():
-    handle = client.get_workflow_handle(PROMO_WORKFLOW_ID)
+    handle = client.get_workflow_handle(JOB_WORKFLOW_ID)
 
     # Remove pending requests only
     await handle.signal("discard")
